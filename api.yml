@@ -74,14 +74,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                required:
-                  - id
-                properties:
-                  id:
-                    type: string
-                    format: uuid
-                    example: 123e4567-e89b-12d3-a456-426614174000
+                $ref: "#/components/schemas/CreateEstateResponse"
         '400':
           description: Invalid input
           content:
@@ -153,14 +146,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                required:
-                  - id
-                properties:
-                  id:
-                    type: string
-                    format: uuid
-                    example: 123e4567-e89b-12d3-a456-426614174000
+                $ref: "#/components/schemas/CreateTreeResponse"
         '404':
           description: Estate not found
           content:
@@ -191,6 +177,46 @@ paths:
                   error:
                     type: string
                     example: Oops, something wrong with the server. Please try again later
+  /estate/{estate_id}/stats:
+    get:
+      summary: Get an estate stats
+      operationId: getEstateStats
+      parameters:
+        - name: estate_id
+          in: path
+          required: true
+          description: Estate ID which we want to get the stats
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetEstateStatsResponse"
+        '404':
+          description: Estate not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Estate not found
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Oops, something wrong with the server. Please try again later
+
 components:
   schemas:
     HelloResponse:
@@ -208,3 +234,42 @@ components:
       properties:
         message:
           type: string
+    CreateEstateResponse:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 123e4567-e89b-12d3-a456-426614174000
+    CreateTreeResponse:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 123e4567-e89b-12d3-a456-426614174000
+    GetEstateStatsResponse:
+      type: object
+      required:
+        - count
+        - max
+        - min
+        - median
+      properties:
+        count:
+          type: integer
+          example: 20
+        max:
+          type: integer
+          example: 10
+        min:
+          type: integer
+          example: 2
+        median:
+          type: integer
+          example: 5
+

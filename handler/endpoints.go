@@ -2,13 +2,20 @@ package handler
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
+	"github.com/google/uuid"
 	openapi_types "github.com/oapi-codegen/runtime/types"
 	"net/http"
 
 	"github.com/SawitProRecruitment/UserService/generated"
 	"github.com/labstack/echo/v4"
 )
+
+func stringToUUID(uuidSTR string) (parsedUUID openapi_types.UUID) {
+	parsedUUID, _ = uuid.Parse(uuidSTR)
+	return
+}
 
 // This is just a test endpoint to get you started. Please delete this endpoint.
 // (GET /hello)
@@ -35,7 +42,11 @@ func (s *Server) CreateEstate(ctx echo.Context) error {
 		return ctx.JSON(http.StatusInternalServerError, map[string]string{"error": "Oops, something wrong with the server. Please try again later"})
 	}
 
-	return ctx.JSON(http.StatusCreated, map[string]string{"id": estateID})
+	resp := generated.CreateEstateResponse{
+		Id: stringToUUID(estateID),
+	}
+
+	return ctx.JSON(http.StatusCreated, resp)
 }
 
 func (s *Server) CreateTree(ctx echo.Context, estateID openapi_types.UUID) error {
@@ -68,5 +79,40 @@ func (s *Server) CreateTree(ctx echo.Context, estateID openapi_types.UUID) error
 		return ctx.JSON(http.StatusInternalServerError, map[string]string{"error": "Oops, something wrong with the server. Please try again later"})
 	}
 
-	return ctx.JSON(http.StatusCreated, map[string]string{"id": treeID})
+	resp := generated.CreateTreeResponse{
+		Id: stringToUUID(treeID),
+	}
+
+	return ctx.JSON(http.StatusCreated, resp)
+}
+
+func (s *Server) GetEstateStats(ctx echo.Context, estateID openapi_types.UUID) error {
+	estate, err := s.Repository.GetEstate(ctx.Request().Context(), estateID.String())
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return ctx.JSON(http.StatusNotFound, map[string]string{"error": "Estate not found"})
+		}
+		return ctx.JSON(http.StatusInternalServerError, map[string]string{"error": "Oops, something wrong with the server. Please try again later"})
+	}
+
+	trees, err := s.Repository.GetTreeHeightsByEstateID(ctx.Request().Context(), estate.ID)
+	if err != nil {
+		return ctx.JSON(http.StatusInternalServerError, map[string]string{"error": "Oops, something wrong with the server. Please try again later"})
+	}
+
+	var resp generated.GetEstateStatsResponse
+	treeCount := len(trees)
+	if treeCount > 0 {
+		resp.Count = treeCount
+		resp.Max = trees[treeCount-1]
+		resp.Min = trees[0]
+
+		if treeCount%2 == 0 {
+			resp.Median = (trees[treeCount/2-1] + trees[treeCount/2]) / 2
+		} else {
+			resp.Median = trees[treeCount/2]
+		}
+	}
+
+	return ctx.JSON(http.StatusOK, resp)
 }
