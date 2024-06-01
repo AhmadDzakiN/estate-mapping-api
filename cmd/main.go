@@ -1,14 +1,13 @@
 package main
 
 import (
-	"os"
-
+	"fmt"
 	"github.com/SawitProRecruitment/UserService/generated"
 	"github.com/SawitProRecruitment/UserService/handler"
 	"github.com/SawitProRecruitment/UserService/repository"
-
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/spf13/viper"
 )
 
 func main() {
@@ -22,7 +21,9 @@ func main() {
 }
 
 func newServer() *handler.Server {
-	dbDsn := os.Getenv("DATABASE_URL")
+	cfg := newViperConfig()
+
+	dbDsn := cfg.GetString("DATABASE_URL")
 	var repo repository.RepositoryInterface = repository.NewRepository(repository.NewRepositoryOptions{
 		Dsn: dbDsn,
 	})
@@ -30,4 +31,24 @@ func newServer() *handler.Server {
 		Repository: repo,
 	}
 	return handler.NewServer(opts)
+}
+
+func newViperConfig() *viper.Viper {
+	v := viper.New()
+	v.AddConfigPath(".")
+	v.AddConfigPath("../../../../params")
+	v.AddConfigPath("./params")
+	v.SetConfigName(".env")
+	v.SetConfigType("env")
+
+	v.AutomaticEnv()
+
+	err := v.ReadInConfig()
+	if err == nil {
+		fmt.Printf("Using config file: %s \n", v.ConfigFileUsed())
+	} else {
+		panic(fmt.Errorf("Config error: %s", err.Error()))
+	}
+
+	return v
 }

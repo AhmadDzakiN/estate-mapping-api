@@ -9,3 +9,12 @@ func (r *Repository) GetTestById(ctx context.Context, input GetTestByIdInput) (o
 	}
 	return
 }
+
+func (r *Repository) CreateEstate(ctx context.Context, length, width int) (newEstateID string, err error) {
+	err = r.Db.QueryRowContext(ctx, "INSERT INTO estates (width, length) VALUES ($1, $2) RETURNING id", width, length).Scan(&newEstateID)
+	if err != nil {
+		return
+	}
+
+	return
+}

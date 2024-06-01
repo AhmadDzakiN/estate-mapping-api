@@ -30,3 +30,5 @@ generated
 .idea
 
 *.DS_Store
+
+params/.env

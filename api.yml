@@ -11,11 +11,11 @@
 openapi: "3.0.0"
 info:
   version: 1.0.0
-  title: User Service
+  title: Estate Mapping API
   license:
     name: MIT
 servers:
-  - url: http://localhost
+  - url: http://localhost:1323
 paths:
   /hello:
     get:
@@ -39,6 +39,55 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  /estate:
+    post:
+      summary: Create a new estate
+      operationId: createEstate
+      requestBody:
+        description: JSON payload to create a new estate
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - length
+                - width
+              properties:
+                length:
+                  type: integer
+                  minimum: 1
+                  maximum: 50000
+                  example: 10
+                width:
+                  type: integer
+                  minimum: 1
+                  maximum: 50000
+                  example: 5
+      responses:
+        '201':
+          description: Estate created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - id
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                    example: 123e4567-e89b-12d3-a456-426614174000
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Invalid input
 components:
   schemas:
     HelloResponse:
