@@ -13,8 +13,8 @@ type GetTestByIdOutput struct {
 
 type Estate struct {
 	ID        string
-	Width     uint
-	Length    uint
+	Width     int
+	Length    int
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
@@ -22,9 +22,9 @@ type Estate struct {
 type Tree struct {
 	ID                 string
 	EstateID           string
-	HorizontalPosition uint
-	VerticalPosition   uint
-	Height             uint
+	HorizontalPosition int
+	VerticalPosition   int
+	Height             int
 	CreatedAt          time.Time
 	UpdatedAt          time.Time
 }

@@ -11,4 +11,6 @@ import (
 type RepositoryInterface interface {
 	GetTestById(ctx context.Context, input GetTestByIdInput) (output GetTestByIdOutput, err error)
 	CreateEstate(ctx context.Context, length, width int) (id string, err error)
+	GetEstate(ctx context.Context, estateID string) (estate Estate, err error)
+	CreateTree(ctx context.Context, estateID string, horizontal, vertical, height int) (newTreeID string, err error)
 }

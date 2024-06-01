@@ -5,13 +5,24 @@ import (
 	"github.com/SawitProRecruitment/UserService/generated"
 	"github.com/SawitProRecruitment/UserService/handler"
 	"github.com/SawitProRecruitment/UserService/repository"
+	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/spf13/viper"
 )
 
+type CustomValidator struct {
+	validator *validator.Validate
+}
+
+func (cv *CustomValidator) Validate(i interface{}) error {
+	return cv.validator.Struct(i)
+}
+
 func main() {
 	e := echo.New()
+
+	e.Validator = &CustomValidator{validator: validator.New()}
 
 	var server generated.ServerInterface = newServer()
 
