@@ -38,7 +38,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: "#/components/schemas/NotFoundErrorResponse"
   /estate:
     post:
       summary: Create a new estate
@@ -80,21 +80,13 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    example: Invalid input
+                $ref: "#/components/schemas/InvalidInputErrorResponse"
         '500':
           description: Internal server error
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    example: Oops, something wrong with the server. Please try again later
+                $ref: "#/components/schemas/InternalServerErrorResponse"
   /estate/{estate_id}/tree:
     post:
       summary: Create a tree for specific estate ID
@@ -152,31 +144,19 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    example: Estate not found
+                $ref: "#/components/schemas/NotFoundErrorResponse"
         '400':
           description: Invalid input
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    example: Invalid input
+                $ref: "#/components/schemas/InvalidInputErrorResponse"
         '500':
           description: Internal server error
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    example: Oops, something wrong with the server. Please try again later
+                $ref: "#/components/schemas/InternalServerErrorResponse"
   /estate/{estate_id}/stats:
     get:
       summary: Get an estate stats
@@ -201,21 +181,13 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    example: Estate not found
+                $ref: "#/components/schemas/NotFoundErrorResponse"
         '500':
           description: Internal server error
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    example: Oops, something wrong with the server. Please try again later
+                $ref: "#/components/schemas/InternalServerErrorResponse"
 
 components:
   schemas:
@@ -227,13 +199,30 @@ components:
         message:
           type: string
           example: Hello, World!
-    ErrorResponse:
+    InternalServerErrorResponse:
       type: object
       required:
-        - message
+        - error
       properties:
-        message:
+        error:
           type: string
+          example: Oops, something wrong with the server. Please try again later
+    InvalidInputErrorResponse:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          example: Invalid input
+    NotFoundErrorResponse:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          example: Data not found
     CreateEstateResponse:
       type: object
       required:

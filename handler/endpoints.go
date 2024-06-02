@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"database/sql"
 	"errors"
 	"fmt"
 	"github.com/SawitProRecruitment/UserService/generated"
@@ -9,6 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	openapi_types "github.com/oapi-codegen/runtime/types"
+	"gorm.io/gorm"
 	"net/http"
 )
 
@@ -29,12 +29,12 @@ func (s *Server) CreateEstate(ctx echo.Context) error {
 	var createReq generated.CreateEstateJSONBody
 	err := ctx.Bind(&createReq)
 	if err != nil {
-		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid input"})
+		return ctx.JSON(http.StatusBadRequest, generated.InvalidInputErrorResponse{Error: "Invalid input"})
 	}
 
 	err = ctx.Validate(createReq)
 	if err != nil {
-		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid input"})
+		return ctx.JSON(http.StatusBadRequest, generated.InvalidInputErrorResponse{Error: "Invalid input"})
 	}
 
 	newEstate := repository.Estate{
@@ -44,7 +44,7 @@ func (s *Server) CreateEstate(ctx echo.Context) error {
 
 	err = s.Repository.CreateEstate(ctx.Request().Context(), &newEstate)
 	if err != nil {
-		return ctx.JSON(http.StatusInternalServerError, map[string]string{"error": "Oops, something wrong with the server. Please try again later"})
+		return ctx.JSON(http.StatusInternalServerError, generated.InternalServerErrorResponse{Error: "Oops, something wrong with the server. Please try again later"})
 	}
 
 	resp := generated.CreateEstateResponse{
@@ -58,25 +58,25 @@ func (s *Server) CreateTree(ctx echo.Context, estateID openapi_types.UUID) error
 	var createReq generated.CreateTreeJSONBody
 	err := ctx.Bind(&createReq)
 	if err != nil {
-		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid input"})
+		return ctx.JSON(http.StatusBadRequest, generated.InvalidInputErrorResponse{Error: "Invalid input"})
 	}
 
 	err = ctx.Validate(createReq)
 	if err != nil {
-		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid input"})
+		return ctx.JSON(http.StatusBadRequest, generated.InvalidInputErrorResponse{Error: "Invalid input"})
 	}
 
 	estate, err := s.Repository.GetEstateByID(ctx.Request().Context(), estateID.String())
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return ctx.JSON(http.StatusNotFound, map[string]string{"error": "Estate not found"})
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return ctx.JSON(http.StatusNotFound, generated.NotFoundErrorResponse{Error: "Estate not found"})
 		}
-		return ctx.JSON(http.StatusInternalServerError, map[string]string{"error": "Oops, something wrong with the server. Please try again later"})
+		return ctx.JSON(http.StatusInternalServerError, generated.InternalServerErrorResponse{Error: "Oops, something wrong with the server. Please try again later"})
 	}
 
-	// Tree position is not in the estate's area
+	// Tree position is out of the estate's area
 	if createReq.X > estate.Length || createReq.Y > estate.Width {
-		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid input"})
+		return ctx.JSON(http.StatusBadRequest, generated.InvalidInputErrorResponse{Error: "Tree position is out of the estate's area"})
 	}
 
 	newTree := repository.Tree{
@@ -88,7 +88,7 @@ func (s *Server) CreateTree(ctx echo.Context, estateID openapi_types.UUID) error
 
 	err = s.Repository.CreateTree(ctx.Request().Context(), &newTree)
 	if err != nil {
-		return ctx.JSON(http.StatusInternalServerError, map[string]string{"error": "Oops, something wrong with the server. Please try again later"})
+		return ctx.JSON(http.StatusInternalServerError, generated.InternalServerErrorResponse{Error: "Oops, something wrong with the server. Please try again later"})
 	}
 
 	resp := generated.CreateTreeResponse{
@@ -101,15 +101,15 @@ func (s *Server) CreateTree(ctx echo.Context, estateID openapi_types.UUID) error
 func (s *Server) GetEstateStats(ctx echo.Context, estateID openapi_types.UUID) error {
 	estate, err := s.Repository.GetEstateByID(ctx.Request().Context(), estateID.String())
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return ctx.JSON(http.StatusNotFound, map[string]string{"error": "Estate not found"})
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return ctx.JSON(http.StatusNotFound, generated.NotFoundErrorResponse{Error: "Estate not found"})
 		}
-		return ctx.JSON(http.StatusInternalServerError, map[string]string{"error": "Oops, something wrong with the server. Please try again later"})
+		return ctx.JSON(http.StatusInternalServerError, generated.InternalServerErrorResponse{Error: "Oops, something wrong with the server. Please try again later"})
 	}
 
 	trees, err := s.Repository.GetTreeHeightsByEstateID(ctx.Request().Context(), estate.ID)
 	if err != nil {
-		return ctx.JSON(http.StatusInternalServerError, map[string]string{"error": "Oops, something wrong with the server. Please try again later"})
+		return ctx.JSON(http.StatusInternalServerError, generated.InternalServerErrorResponse{Error: "Oops, something wrong with the server. Please try again later"})
 	}
 
 	var resp generated.GetEstateStatsResponse
