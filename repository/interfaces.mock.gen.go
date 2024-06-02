@@ -40,31 +40,59 @@ func (m *MockRepositoryInterface) EXPECT() *MockRepositoryInterfaceMockRecorder 
 }
 
 // CreateEstate mocks base method.
-func (m *MockRepositoryInterface) CreateEstate(ctx context.Context, length, width int) (string, error) {
+func (m *MockRepositoryInterface) CreateEstate(ctx context.Context, newEstate *Estate) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateEstate", ctx, length, width)
-	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret := m.ctrl.Call(m, "CreateEstate", ctx, newEstate)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // CreateEstate indicates an expected call of CreateEstate.
-func (mr *MockRepositoryInterfaceMockRecorder) CreateEstate(ctx, length, width any) *gomock.Call {
+func (mr *MockRepositoryInterfaceMockRecorder) CreateEstate(ctx, newEstate any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateEstate", reflect.TypeOf((*MockRepositoryInterface)(nil).CreateEstate), ctx, length, width)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateEstate", reflect.TypeOf((*MockRepositoryInterface)(nil).CreateEstate), ctx, newEstate)
 }
 
-// GetTestById mocks base method.
-func (m *MockRepositoryInterface) GetTestById(ctx context.Context, input GetTestByIdInput) (GetTestByIdOutput, error) {
+// CreateTree mocks base method.
+func (m *MockRepositoryInterface) CreateTree(ctx context.Context, newTree *Tree) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetTestById", ctx, input)
-	ret0, _ := ret[0].(GetTestByIdOutput)
+	ret := m.ctrl.Call(m, "CreateTree", ctx, newTree)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CreateTree indicates an expected call of CreateTree.
+func (mr *MockRepositoryInterfaceMockRecorder) CreateTree(ctx, newTree any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateTree", reflect.TypeOf((*MockRepositoryInterface)(nil).CreateTree), ctx, newTree)
+}
+
+// GetEstateByID mocks base method.
+func (m *MockRepositoryInterface) GetEstateByID(ctx context.Context, estateID string) (Estate, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetEstateByID", ctx, estateID)
+	ret0, _ := ret[0].(Estate)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetTestById indicates an expected call of GetTestById.
-func (mr *MockRepositoryInterfaceMockRecorder) GetTestById(ctx, input any) *gomock.Call {
+// GetEstateByID indicates an expected call of GetEstateByID.
+func (mr *MockRepositoryInterfaceMockRecorder) GetEstateByID(ctx, estateID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTestById", reflect.TypeOf((*MockRepositoryInterface)(nil).GetTestById), ctx, input)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEstateByID", reflect.TypeOf((*MockRepositoryInterface)(nil).GetEstateByID), ctx, estateID)
+}
+
+// GetTreeHeightsByEstateID mocks base method.
+func (m *MockRepositoryInterface) GetTreeHeightsByEstateID(ctx context.Context, estateID string) ([]int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetTreeHeightsByEstateID", ctx, estateID)
+	ret0, _ := ret[0].([]int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetTreeHeightsByEstateID indicates an expected call of GetTreeHeightsByEstateID.
+func (mr *MockRepositoryInterfaceMockRecorder) GetTreeHeightsByEstateID(ctx, estateID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTreeHeightsByEstateID", reflect.TypeOf((*MockRepositoryInterface)(nil).GetTreeHeightsByEstateID), ctx, estateID)
 }

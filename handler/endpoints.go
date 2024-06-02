@@ -4,12 +4,12 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"github.com/SawitProRecruitment/UserService/generated"
+	"github.com/SawitProRecruitment/UserService/repository"
 	"github.com/google/uuid"
+	"github.com/labstack/echo/v4"
 	openapi_types "github.com/oapi-codegen/runtime/types"
 	"net/http"
-
-	"github.com/SawitProRecruitment/UserService/generated"
-	"github.com/labstack/echo/v4"
 )
 
 func stringToUUID(uuidSTR string) (parsedUUID openapi_types.UUID) {
@@ -37,13 +37,18 @@ func (s *Server) CreateEstate(ctx echo.Context) error {
 		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid input"})
 	}
 
-	estateID, err := s.Repository.CreateEstate(ctx.Request().Context(), createReq.Length, createReq.Width)
+	newEstate := repository.Estate{
+		Width:  createReq.Width,
+		Length: createReq.Length,
+	}
+
+	err = s.Repository.CreateEstate(ctx.Request().Context(), &newEstate)
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, map[string]string{"error": "Oops, something wrong with the server. Please try again later"})
 	}
 
 	resp := generated.CreateEstateResponse{
-		Id: stringToUUID(estateID),
+		Id: stringToUUID(newEstate.ID),
 	}
 
 	return ctx.JSON(http.StatusCreated, resp)
@@ -61,7 +66,7 @@ func (s *Server) CreateTree(ctx echo.Context, estateID openapi_types.UUID) error
 		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid input"})
 	}
 
-	estate, err := s.Repository.GetEstate(ctx.Request().Context(), estateID.String())
+	estate, err := s.Repository.GetEstateByID(ctx.Request().Context(), estateID.String())
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return ctx.JSON(http.StatusNotFound, map[string]string{"error": "Estate not found"})
@@ -74,20 +79,27 @@ func (s *Server) CreateTree(ctx echo.Context, estateID openapi_types.UUID) error
 		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid input"})
 	}
 
-	treeID, err := s.Repository.CreateTree(ctx.Request().Context(), estate.ID, createReq.X, createReq.Y, createReq.Height)
+	newTree := repository.Tree{
+		EstateID:           estate.ID,
+		HorizontalPosition: createReq.X,
+		VerticalPosition:   createReq.Y,
+		Height:             createReq.Height,
+	}
+
+	err = s.Repository.CreateTree(ctx.Request().Context(), &newTree)
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, map[string]string{"error": "Oops, something wrong with the server. Please try again later"})
 	}
 
 	resp := generated.CreateTreeResponse{
-		Id: stringToUUID(treeID),
+		Id: stringToUUID(newTree.ID),
 	}
 
 	return ctx.JSON(http.StatusCreated, resp)
 }
 
 func (s *Server) GetEstateStats(ctx echo.Context, estateID openapi_types.UUID) error {
-	estate, err := s.Repository.GetEstate(ctx.Request().Context(), estateID.String())
+	estate, err := s.Repository.GetEstateByID(ctx.Request().Context(), estateID.String())
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return ctx.JSON(http.StatusNotFound, map[string]string{"error": "Estate not found"})

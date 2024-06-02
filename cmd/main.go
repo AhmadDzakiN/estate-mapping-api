@@ -9,6 +9,9 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/spf13/viper"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 type CustomValidator struct {
@@ -34,14 +37,23 @@ func main() {
 func newServer() *handler.Server {
 	cfg := newViperConfig()
 
-	dbDsn := cfg.GetString("DATABASE_URL")
-	var repo repository.RepositoryInterface = repository.NewRepository(repository.NewRepositoryOptions{
-		Dsn: dbDsn,
-	})
+	dbCfg := newDatabase(cfg.GetString("DATABASE_URL"))
+	var repo repository.RepositoryInterface = repository.NewRepository(repository.Repository{Db: dbCfg})
 	opts := handler.NewServerOptions{
 		Repository: repo,
 	}
 	return handler.NewServer(opts)
+}
+
+func newDatabase(dbURL string) *gorm.DB {
+	db, err := gorm.Open(postgres.Open(dbURL), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Info),
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	return db
 }
 
 func newViperConfig() *viper.Viper {
