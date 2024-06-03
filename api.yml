@@ -188,6 +188,37 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/InternalServerErrorResponse"
+  /estate/{estate_id}/drone-plan:
+    get:
+      summary: Get the sum distance of the drone monitoring travel in the estate
+      operationId: getEstateDronePlan
+      parameters:
+        - name: estate_id
+          in: path
+          required: true
+          description: Estate ID which we want to monitor with drone
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetEstateDronePlanResponse"
+        '404':
+          description: Estate not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundErrorResponse"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalServerErrorResponse"
 
 components:
   schemas:
@@ -261,4 +292,11 @@ components:
         median:
           type: integer
           example: 5
-
+    GetEstateDronePlanResponse:
+      type: object
+      required:
+        - distance
+      properties:
+        distance:
+          type: integer
+          example: 200

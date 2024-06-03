@@ -5,14 +5,6 @@ import (
 	"errors"
 )
 
-//func (r *Repository) GetTestById(ctx context.Context, input GetTestByIdInput) (output GetTestByIdOutput, err error) {
-//	err = r.Db.QueryRowContext(ctx, "SELECT name FROM test WHERE id = $1;", input.Id).Scan(&output.Name)
-//	if err != nil {
-//		return
-//	}
-//	return
-//}
-
 func (r *Repository) CreateEstate(ctx context.Context, newEstate *Estate) (err error) {
 	result := r.Db.WithContext(ctx).Create(newEstate)
 	if result.Error != nil {

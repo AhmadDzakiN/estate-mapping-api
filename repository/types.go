@@ -3,14 +3,6 @@ package repository
 
 import "time"
 
-type GetTestByIdInput struct {
-	Id string
-}
-
-type GetTestByIdOutput struct {
-	Name string
-}
-
 type Estate struct {
 	ID        string    `gorm:"column:id;type:uuid;default:uuid_generate_v4();primaryKey"`
 	Width     int       `gorm:"column:width;not null"`

@@ -20,8 +20,8 @@ func stringToUUID(uuidSTR string) (parsedUUID openapi_types.UUID) {
 // This is just a test endpoint to get you started. Please delete this endpoint.
 // (GET /hello)
 func (s *Server) GetHello(ctx echo.Context, params generated.GetHelloParams) error {
-	var resp generated.HelloResponse
-	resp.Message = fmt.Sprintf("Hello User %d", params.Id)
+	var resp generated.NotFoundErrorResponse
+	resp.Error = fmt.Sprintf("Hello User %d", params.Id)
 	return ctx.JSON(http.StatusOK, resp)
 }
 
@@ -120,11 +120,23 @@ func (s *Server) GetEstateStats(ctx echo.Context, estateID openapi_types.UUID) e
 		resp.Min = trees[0]
 
 		if treeCount%2 == 0 {
-			resp.Median = (trees[treeCount/2-1] + trees[treeCount/2]) / 2
+			resp.Median = (trees[treeCount/2-1] + trees[treeCount/2]) / 2 // the div result will be floored
 		} else {
 			resp.Median = trees[treeCount/2]
 		}
 	}
 
 	return ctx.JSON(http.StatusOK, resp)
+}
+
+func (s *Server) GetEstateDronePlan(ctx echo.Context, estateId openapi_types.UUID) error {
+	//estate, err := s.Repository.GetEstateByID(ctx.Request().Context(), estateId.String())
+	//if err != nil {
+	//	if errors.Is(err, gorm.ErrRecordNotFound) {
+	//		return ctx.JSON(http.StatusNotFound, generated.NotFoundErrorResponse{Error: "Estate not found"})
+	//	}
+	//	return ctx.JSON(http.StatusInternalServerError, generated.InternalServerErrorResponse{Error: "Oops, something wrong with the server. Please try again later"})
+	//}
+	//
+	return nil
 }
