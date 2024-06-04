@@ -2,7 +2,6 @@ package handler
 
 import (
 	"errors"
-	"fmt"
 	"github.com/SawitProRecruitment/UserService/generated"
 	"github.com/SawitProRecruitment/UserService/repository"
 	"github.com/google/uuid"
@@ -15,14 +14,6 @@ import (
 func stringToUUID(uuidSTR string) (parsedUUID openapi_types.UUID) {
 	parsedUUID, _ = uuid.Parse(uuidSTR)
 	return
-}
-
-// This is just a test endpoint to get you started. Please delete this endpoint.
-// (GET /hello)
-func (s *Server) GetHello(ctx echo.Context, params generated.GetHelloParams) error {
-	var resp generated.NotFoundErrorResponse
-	resp.Error = fmt.Sprintf("Hello User %d", params.Id)
-	return ctx.JSON(http.StatusOK, resp)
 }
 
 func (s *Server) CreateEstate(ctx echo.Context) error {

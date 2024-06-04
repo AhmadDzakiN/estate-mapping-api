@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/SawitProRecruitment/UserService/generated"
 	"github.com/SawitProRecruitment/UserService/handler"
 	"github.com/SawitProRecruitment/UserService/repository"
@@ -56,6 +55,7 @@ func newDatabase(dbURL string) *gorm.DB {
 	return db
 }
 
+// for local development to read the env file
 func newViperConfig() *viper.Viper {
 	v := viper.New()
 	v.AddConfigPath(".")
@@ -66,12 +66,7 @@ func newViperConfig() *viper.Viper {
 
 	v.AutomaticEnv()
 
-	err := v.ReadInConfig()
-	if err == nil {
-		fmt.Printf("Using config file: %s \n", v.ConfigFileUsed())
-	} else {
-		panic(fmt.Errorf("Config error: %s", err.Error()))
-	}
+	v.ReadInConfig()
 
 	return v
 }
