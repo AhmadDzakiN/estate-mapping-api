@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/SawitProRecruitment/UserService/generated"
 	"github.com/SawitProRecruitment/UserService/repository"
+	"github.com/SawitProRecruitment/UserService/repository/mock"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
@@ -23,7 +24,7 @@ import (
 
 type EndpointsTestSuite struct {
 	suite.Suite
-	repositoryMock *repository.MockRepositoryInterface
+	repositoryMock *mock.MockRepositoryInterface
 	echo           *echo.Echo
 	server         *Server
 }
@@ -40,7 +41,7 @@ func (e *EndpointsTestSuite) SetupTest() {
 	mockCtrl := gomock.NewController(e.T())
 	defer mockCtrl.Finish()
 
-	e.repositoryMock = repository.NewMockRepositoryInterface(mockCtrl)
+	e.repositoryMock = mock.NewMockRepositoryInterface(mockCtrl)
 	e.server = NewServer(NewServerOptions{
 		Repository: e.repositoryMock,
 	})
