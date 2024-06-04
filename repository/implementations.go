@@ -55,3 +55,14 @@ func (r *Repository) GetTreeHeightsByEstateID(ctx context.Context, estateID stri
 
 	return
 }
+
+func (r *Repository) GetTreesByEstateIDAndPlotsLocations(ctx context.Context, estateID string) (trees []Tree, err error) {
+	result := r.Db.WithContext(ctx).Select("id", "horizontal_position", "vertical_position", "height").
+		Where("estate_id", estateID).Order("vertical_position ASC, horizontal_position ASC;").Find(&trees)
+	if result.Error != nil {
+		err = result.Error
+		return
+	}
+
+	return
+}

@@ -13,4 +13,5 @@ type RepositoryInterface interface {
 	GetEstateByID(ctx context.Context, estateID string) (estate Estate, err error)
 	CreateTree(ctx context.Context, newTree *Tree) (err error)
 	GetTreeHeightsByEstateID(ctx context.Context, estateID string) (treeHeights []int, err error)
+	GetTreesByEstateIDAndPlotsLocations(ctx context.Context, estateID string) (trees []Tree, err error)
 }

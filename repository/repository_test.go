@@ -313,3 +313,90 @@ func (r *RepositoryTestSuite) TestGetTreeHeightsByEstateID() {
 		})
 	}
 }
+
+func (r *RepositoryTestSuite) TestGetTreesByEstateIDAndPlotsLocations() {
+	type fields struct {
+		mock func(estateID string)
+	}
+
+	type args struct {
+		ctx      context.Context
+		estateID string
+	}
+
+	query := `SELECT id,horizontal_position,vertical_position,height FROM trees WHERE estate_id = $1 ORDER BY vertical_position ASC, horizontal_position ASC;`
+
+	tests := []struct {
+		name           string
+		args           args
+		fields         fields
+		expectedResult []Tree
+		expectedErr    error
+	}{
+		{
+			name: "Failed, theres an error in db",
+			args: args{
+				ctx:      r.ctx,
+				estateID: "f0f40954-d0c8-4a1a-9d54-1b4e57e2e236",
+			},
+			fields: fields{
+				mock: func(estateID string) {
+					r.sqlMock.MatchExpectationsInOrder(false)
+					r.sqlMock.ExpectQuery(query).WithArgs(estateID).WillReturnError(sql.ErrConnDone)
+				}},
+			expectedResult: []Tree(nil),
+			expectedErr:    sql.ErrConnDone,
+		},
+		{
+			name: "Success",
+			args: args{
+				ctx:      r.ctx,
+				estateID: "f0f40954-d0c8-4a1a-9d54-1b4e57e2e236",
+			},
+			fields: fields{
+				mock: func(id string) {
+					r.sqlMock.MatchExpectationsInOrder(false)
+					r.sqlMock.ExpectQuery(query).WithArgs(id).
+						WillReturnRows(r.sqlMock.NewRows([]string{"id", "estate_id", "horizontal_position", "vertical_position", "height"}).
+							AddRow("4babb414-5b77-4886-b9e7-449d76def290", "f0f40954-d0c8-4a1a-9d54-1b4e57e2e236", 10, 20, 4).
+							AddRow("2d5fdfb2-9d01-4eab-b9bf-e6d2be4c93ea", "f0f40954-d0c8-4a1a-9d54-1b4e57e2e236", 4, 2, 7).
+							AddRow("837fd96f-a179-4dcb-8052-e9673f4db206", "f0f40954-d0c8-4a1a-9d54-1b4e57e2e236", 5, 9, 5))
+				}},
+			expectedResult: []Tree{
+				{
+					ID:                 "4babb414-5b77-4886-b9e7-449d76def290",
+					EstateID:           "f0f40954-d0c8-4a1a-9d54-1b4e57e2e236",
+					HorizontalPosition: 10,
+					VerticalPosition:   20,
+					Height:             4,
+				},
+				{
+					ID:                 "2d5fdfb2-9d01-4eab-b9bf-e6d2be4c93ea",
+					EstateID:           "f0f40954-d0c8-4a1a-9d54-1b4e57e2e236",
+					HorizontalPosition: 4,
+					VerticalPosition:   2,
+					Height:             7,
+				},
+				{
+					ID:                 "837fd96f-a179-4dcb-8052-e9673f4db206",
+					EstateID:           "f0f40954-d0c8-4a1a-9d54-1b4e57e2e236",
+					HorizontalPosition: 5,
+					VerticalPosition:   9,
+					Height:             5,
+				},
+			},
+			expectedErr: nil,
+		},
+	}
+
+	for _, test := range tests {
+		r.Suite.Run(test.name, func() {
+			test.fields.mock(test.args.estateID)
+
+			actualResult, actualErr := r.repository.GetTreesByEstateIDAndPlotsLocations(test.args.ctx, test.args.estateID)
+
+			assert.Equal(r.T(), test.expectedErr, actualErr)
+			assert.Equal(r.T(), test.expectedResult, actualResult)
+		})
+	}
+}

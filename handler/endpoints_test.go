@@ -309,7 +309,7 @@ func (e *EndpointsTestSuite) TestCreateTree() {
 	}
 }
 
-func (e *EndpointsTestSuite) TestGetEstateStats() {
+func (e *EndpointsTestSuite) TestGetEstateDronePlan() {
 	type fields struct {
 		mock func(ctx echo.Context, estateID openapi_types.UUID)
 	}
@@ -411,6 +411,128 @@ func (e *EndpointsTestSuite) TestGetEstateStats() {
 			test.fields.mock(ctx, test.args.estateID)
 
 			err := e.server.GetEstateStats(ctx, test.args.estateID)
+			assert.NoError(e.T(), err)
+
+			var resp generated.InvalidInputErrorResponse
+			err = json.Unmarshal(rec.Body.Bytes(), &resp)
+			assert.NoError(e.T(), err)
+
+			assert.Equal(e.T(), test.expectedStatusCode, rec.Code)
+			assert.Equal(e.T(), test.expectedErr, resp.Error)
+		})
+	}
+}
+
+func (e *EndpointsTestSuite) TestGetEstateStats() {
+	type fields struct {
+		mock func(ctx echo.Context, estateID openapi_types.UUID)
+	}
+
+	type args struct {
+		estateID openapi_types.UUID
+	}
+
+	tests := []struct {
+		name               string
+		args               args
+		fields             fields
+		expectedErr        string
+		expectedStatusCode int
+	}{
+		{
+			name: "Failed, estate not found for GetEstateByID",
+			args: args{
+				estateID: uuid.New(),
+			},
+			fields: fields{
+				mock: func(ctx echo.Context, estateID openapi_types.UUID) {
+					e.repositoryMock.EXPECT().GetEstateByID(ctx.Request().Context(), estateID.String()).Return(repository.Estate{}, gorm.ErrRecordNotFound)
+				},
+			},
+			expectedErr:        "Estate not found",
+			expectedStatusCode: http.StatusNotFound,
+		},
+		{
+			name: "Failed, got error non record not found for GetEstateByID repo",
+			args: args{
+				estateID: uuid.New(),
+			},
+			fields: fields{
+				mock: func(ctx echo.Context, estateID openapi_types.UUID) {
+					e.repositoryMock.EXPECT().GetEstateByID(ctx.Request().Context(), estateID.String()).Return(repository.Estate{}, errors.New("random error"))
+				},
+			},
+			expectedErr:        "Oops, something wrong with the server. Please try again later",
+			expectedStatusCode: http.StatusInternalServerError,
+		},
+		{
+			name: "Failed, got error for GetTreesByEstateIDAndPlotsLocations repo",
+			args: args{
+				estateID: uuid.New(),
+			},
+			fields: fields{
+				mock: func(ctx echo.Context, estateID openapi_types.UUID) {
+					e.repositoryMock.EXPECT().GetEstateByID(ctx.Request().Context(), estateID.String()).Return(repository.Estate{
+						ID: estateID.String(),
+					}, nil)
+					e.repositoryMock.EXPECT().GetTreesByEstateIDAndPlotsLocations(ctx.Request().Context(), estateID.String()).Return([]repository.Tree(nil), errors.New("random error"))
+				},
+			},
+			expectedErr:        "Oops, something wrong with the server. Please try again later",
+			expectedStatusCode: http.StatusInternalServerError,
+		},
+		{
+			name: "Success, with estate do not have any single tree",
+			args: args{
+				estateID: uuid.New(),
+			},
+			fields: fields{
+				mock: func(ctx echo.Context, estateID openapi_types.UUID) {
+					e.repositoryMock.EXPECT().GetEstateByID(ctx.Request().Context(), estateID.String()).Return(repository.Estate{
+						ID: estateID.String(),
+					}, nil)
+					e.repositoryMock.EXPECT().GetTreesByEstateIDAndPlotsLocations(ctx.Request().Context(), estateID.String()).Return([]repository.Tree(nil), nil)
+				},
+			},
+			expectedErr:        "",
+			expectedStatusCode: http.StatusOK,
+		},
+		{
+			name: "Success, with estate have tree in its plot",
+			args: args{
+				estateID: uuid.New(),
+			},
+			fields: fields{
+				mock: func(ctx echo.Context, estateID openapi_types.UUID) {
+					e.repositoryMock.EXPECT().GetEstateByID(ctx.Request().Context(), estateID.String()).Return(repository.Estate{
+						ID: estateID.String(),
+					}, nil)
+					e.repositoryMock.EXPECT().GetTreesByEstateIDAndPlotsLocations(ctx.Request().Context(), estateID.String()).Return([]repository.Tree{
+						{
+							ID:                 uuid.New().String(),
+							EstateID:           uuid.New().String(),
+							HorizontalPosition: 2,
+							VerticalPosition:   3,
+							Height:             5,
+						},
+					}, nil)
+				},
+			},
+			expectedErr:        "",
+			expectedStatusCode: http.StatusOK,
+		},
+	}
+
+	for _, test := range tests {
+		e.Suite.Run(test.name, func() {
+			req := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/estates/%s/drone-plan", test.args.estateID), nil)
+			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+			rec := httptest.NewRecorder()
+			ctx := e.echo.NewContext(req, rec)
+
+			test.fields.mock(ctx, test.args.estateID)
+
+			err := e.server.GetEstateDronePlan(ctx, test.args.estateID)
 			assert.NoError(e.T(), err)
 
 			var resp generated.InvalidInputErrorResponse
